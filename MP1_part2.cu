@@ -51,7 +51,7 @@ void HostMatrixMultiplication(int* A, int* B, int* C, int size) {
 
 int main() {
     // Sizes of matrices
-    const int sizes[] = { S_100, S_250, S_500, S_1000 };
+    const int sizes[] = { S_100, S_250, S_500, S_1000, S_1500 };
     const int num_sizes = sizeof(sizes) / sizeof(sizes[0]);
 
     // Block sizes
