@@ -16,10 +16,8 @@
 
 #define BLOCK_SIZES {1, 2, 5, 10, 25, 32}
 
-int flag = 0; //flag for checking if matrices are =
+int flag = 0; 
 
-// Device matrix multiplication calculates row and col of the grid / block and then
-// flattens matrix before inserting values
 __global__ void DeviceMatrixMultiplication(int* A, int* B, int* O, int size) {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
     int col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -62,13 +60,13 @@ int main() {
         int size = sizes[size_index];
         size_t hostSize = size * size * sizeof(int);
 
-        // Allocate host memory
+        // Host memory
         int* h_A = (int*)malloc(hostSize);
         int* h_B = (int*)malloc(hostSize);
         int* h_C = (int*)malloc(hostSize);
         int* h_P = (int*)malloc(hostSize);
 
-        // Initialize host matrices
+        // Host matrices
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 // Get the 2 random values and assign
@@ -79,7 +77,7 @@ int main() {
             }
         }
 
-        // Allocate device memory
+        // Device memory
         int* d_A = nullptr;
         int* d_B = nullptr;
         int* d_C = nullptr;
@@ -92,7 +90,7 @@ int main() {
             dim3 threadsPerBlock(block_size, block_size);
             dim3 numberOfBlocks(ceil(size / (float)threadsPerBlock.x), ceil(size / (float)threadsPerBlock.y), 1);
 
-            // Time the host-to-device transfer
+            // host-to-device transfer
             cudaEvent_t start_transfer_hd, stop_transfer_hd;
             cudaEventCreate(&start_transfer_hd);
             cudaEventCreate(&stop_transfer_hd);
@@ -104,7 +102,7 @@ int main() {
             float transfer_hd_time;
             cudaEventElapsedTime(&transfer_hd_time, start_transfer_hd, stop_transfer_hd);
 
-            // Time the kernel execution
+            // kernel execution
             cudaEvent_t start_kernel, stop_kernel;
             cudaEventCreate(&start_kernel);
             cudaEventCreate(&stop_kernel);
@@ -115,7 +113,7 @@ int main() {
             float kernel_time;
             cudaEventElapsedTime(&kernel_time, start_kernel, stop_kernel);
 
-            // Time the device-to-host transfer
+            // device-to-host transfer
             cudaEvent_t start_transfer_dh, stop_transfer_dh;
             cudaEventCreate(&start_transfer_dh);
             cudaEventCreate(&stop_transfer_dh);
@@ -126,13 +124,12 @@ int main() {
             float transfer_dh_time;
             cudaEventElapsedTime(&transfer_dh_time, start_transfer_dh, stop_transfer_dh);
 
-            // Compute the CPU multiplication time
+            // CPU multiplication time
             clock_t cpu_start = clock();
             HostMatrixMultiplication(h_A, h_B, h_P, size);
             clock_t cpu_end = clock();
             float cpu_time = (float)(cpu_end - cpu_start) / CLOCKS_PER_SEC * 1000; // Convert to milliseconds
 
-            // Print results
             printf("Matrix Size: %dx%d, Block Size: %d\n", size, size, block_size);
             printf("Host to Device Transfer Time: %0.2f ms\n", transfer_hd_time);
             printf("Kernel Multiplication Time: %0.2f ms\n", kernel_time);
@@ -141,12 +138,10 @@ int main() {
             printf("\n");
         }
 
-        // Free device memory
         cudaFree(d_A);
         cudaFree(d_B);
         cudaFree(d_C);
 
-        // Free host memory
         free(h_A);
         free(h_B);
         free(h_C);
