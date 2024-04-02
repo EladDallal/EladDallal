@@ -1,4 +1,3 @@
-
 #include <cuda_runtime.h>
 #include "device_launch_parameters.h"
 
@@ -88,6 +87,19 @@ int main() {
     for (int i = 0; i < NUM_WIDTHS; ++i) {
         int TILE_WIDTH = TILE_WIDTHS[i];
 
+        cudaDeviceProp dp;
+        cudaGetDeviceProperties(&dp, 0);
+        std::cout << "\n\nTILE_WIDTH = " << TILE_WIDTH << std::endl;
+        printf("Threads Simultaneously Scheduled = %d\n\n", dp.multiProcessorCount * dp.maxThreadsPerMultiProcessor);
+
+        cudaFuncAttributes attr;
+        cudaFuncGetAttributes(&attr, matrixMul);
+        printf("Number of Registers = %d\n", attr.numRegs);
+        printf("Shared Memory Size = %d bytes\n", 2 * TILE_WIDTHS[i] * TILE_WIDTHS[i] * 4);
+        printf("Number of Blocks Per Streaming Multiprocessor = %d\n", dp.maxThreadsPerMultiProcessor / attr.maxThreadsPerBlock);
+        printf("Max Total Threads Simultaneously Scheduled = %d\n", dp.maxThreadsPerMultiProcessor);
+
+
         // Copy input matrices from host to device
         cudaMemcpy(d_M, M, matrix_size, cudaMemcpyHostToDevice);
         cudaMemcpy(d_N, N, matrix_size, cudaMemcpyHostToDevice);
@@ -121,28 +133,28 @@ int main() {
             std::cout << "TILE_WIDTH = " << TILE_WIDTH << ": Test PASSED. Time: " << milliseconds << " ms" << std::endl;
         }
         else {
-            std::cout << "TILE_WIDTH = " << TILE_WIDTH << ": Test FAILED." << std::endl;
+          std::cout << "TILE_WIDTH = " << TILE_WIDTH << ": Test FAILED." << std::endl;
         }
     }
-        //// Print GPU multiplication result
-        //std::cout << "GPU Multiplication Result:" << std::endl;
-        //for (int i = 0; i < size; ++i) {
-        //    for (int j = 0; j < size; ++j) {
-        //        std::cout << P_gpu[i * size + j] << " ";
-        //    }
-        //    std::cout << std::endl;
-        //}
+    //// Print GPU multiplication result
+    //std::cout << "GPU Multiplication Result:" << std::endl;
+    //for (int i = 0; i < size; ++i) {
+    //    for (int j = 0; j < size; ++j) {
+    //        std::cout << P_gpu[i * size + j] << " ";
+    //    }
+    //    std::cout << std::endl;
+    //}
 
-        //// Print CPU multiplication result
-        //std::cout << "CPU Multiplication Result:" << std::endl;
-        //for (int i = 0; i < size; ++i) {
-        //    for (int j = 0; j < size; ++j) {
-        //        std::cout << P_cpu[i * size + j] << " ";
-        //    }
-        //    std::cout << std::endl;
-        //}
+    //// Print CPU multiplication result
+    //std::cout << "CPU Multiplication Result:" << std::endl;
+    //for (int i = 0; i < size; ++i) {
+    //    for (int j = 0; j < size; ++j) {
+    //        std::cout << P_cpu[i * size + j] << " ";
+    //    }
+    //    std::cout << std::endl;
+    //}
 
-    // Free memory
+// Free memory
     free(M);
     free(N);
     free(P_cpu);
